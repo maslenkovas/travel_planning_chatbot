@@ -13,12 +13,13 @@ from src.vector_search.vector_store import VectorStore
 from src.utils.text_processing import format_retrieved_chunks
 
 # Load environment variables for ChromaDB configuration
-CHROMA_COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME")
-CHROMA_HOST = os.getenv("CHROMA_HOST", "chromadb")
-CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+from src.config import chroma_collection_name, chroma_host, chroma_port
 
 # load other config variables
 from src.config import n_rag_results
+
+# Load API keys from environment variables
+WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY")
 
 class WeatherTool(BaseTool):
     name: str = "weather_tool"
@@ -69,7 +70,7 @@ class RagTool(BaseTool):
     args_schema: Optional[ArgsSchema] = RagToolInput
 
     def _run(self, query: str) -> str:
-        vector_store = VectorStore(collection_name=CHROMA_COLLECTION_NAME, chroma_host=CHROMA_HOST, chroma_port=CHROMA_PORT)
+        vector_store = VectorStore(collection_name=chroma_collection_name, chroma_host=chroma_host, chroma_port=chroma_port)
         retrieved_chunks = vector_store.search(query, n_results=n_rag_results)
         formatted_context = format_retrieved_chunks(retrieved_chunks)
         return formatted_context
