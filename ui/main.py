@@ -26,7 +26,7 @@ def form_get():
 def form_post(query: str = Form(...)):
     response_text = ""
     try:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=15.0) as client:
             r = client.post(API_URL, json={"query": query})
             if r.status_code == 200:
                 response_text = r.json().get("response", "No response")
