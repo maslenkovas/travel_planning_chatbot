@@ -9,6 +9,8 @@ from langchain_core.language_models import BaseLanguageModel
 from src.agent.prompts import Prompts
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 
+import logging
+
 class TravelGraphState(TypedDict):
     query: str
     intent: str
@@ -88,29 +90,48 @@ class TravelChatbotGraph(StateGraph):
 
     async def get_loc_from_query(self,  state: TravelGraphState):
         chain = self.prompts.create_get_locations_from_query_prompt_template() | self.llm | JsonOutputParser()
-        response = await chain.ainvoke({"query": state["query"]})
-
+        try:
+            response = await chain.ainvoke({"query": state["query"]})
+        except Exception as e:
+            logging.info(f"Error in get_loc_from_query: {e}")
+            response = {"locations": []}
+            # Handle the error (e.g., log it)
         return ({"locations": response.get("locations", [])})
 
     async def get_loc_from_book(self,  state: TravelGraphState):
         chain = self.prompts.create_get_locations_from_book_prompt_template() | self.llm | JsonOutputParser()
-        formatted_context = self.rag_tool.run(state["query"])
-        response = await chain.ainvoke({"context": formatted_context, "query": state["query"]})
-
+        try:
+            formatted_context = self.rag_tool.run(state["query"])
+            response = await chain.ainvoke({"context": formatted_context, "query": state["query"]})
+        except Exception as e:
+            logging.info(f"Error in get_loc_from_book: {e}")
+            response = {"locations": []}
+            # Handle the error (e.g., log it)
         return ({"locations": response.get("locations", []), "context": formatted_context})
 
     async def book_retriever_node(self,  state: TravelGraphState):
-        formatted_context = self.rag_tool.run({"query":state["query"]})
-
+        try:
+            formatted_context = self.rag_tool.run({"query":state["query"]})
+        except Exception as e:
+            logging.info(f"Error in book_retriever_node: {e}")
+            formatted_context = ""
         return ({"context": formatted_context})
 
     async def get_weather(self,  state: TravelGraphState):
-        weather_info = await self.weather_tool.ainvoke({"locations":state["locations"]})
+        try:
+            weather_info = await self.weather_tool.ainvoke({"locations":state["locations"]})
+        except Exception as e:
+            logging.info(f"Error in get_weather: {e}")
+            weather_info = {}
         return ({"weather_info": weather_info})
 
     async def final_response(self,  state: TravelGraphState):
         chain = self.prompts.create_final_response_prompt_template() | self.llm | StrOutputParser()
-        response = await chain.ainvoke({"query": state["query"], "context": state.get("context", ""), "weather_info": state.get("weather_info", "")})
+        try:
+            response = await chain.ainvoke({"query": state["query"], "context": state.get("context", ""), "weather_info": state.get("weather_info", "")})
+        except Exception as e:
+            logging.info(f"Error in final_response: {e}")
+            response = "I am sorry, but I am unable to provide a response at this time. Please try again later."
         return ({"final_answer": response})
 
     async def fallback_node(self,  state: TravelGraphState):
@@ -121,5 +142,10 @@ class TravelChatbotGraph(StateGraph):
     async def chitchat_node(self,  state: TravelGraphState):
         
         chain  = self.prompts.create_chitchat_prompt_template() | self.llm | StrOutputParser()
-        response = await chain.ainvoke({"query": state["query"], "chat_history": state.get("chat_history", [])})
+
+        try:
+            response = await chain.ainvoke({"query": state["query"], "chat_history": state.get("chat_history", [])})
+        except Exception as e:
+            logging.info(f"Error in chitchat_node: {e}")
+            response = "I am sorry, but I am unable to provide a response at this time. Please try again later."
         return ({"final_answer": response})
