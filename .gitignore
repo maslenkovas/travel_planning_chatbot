@@ -1,3 +1,4 @@
 src/notebooks_dev
+src/.DS_Store
 __pycache__
 .env
