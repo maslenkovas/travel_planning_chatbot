@@ -1,0 +1,3 @@
+src/notebooks_dev
+__pycache__
+.env
