@@ -1,7 +1,8 @@
 
 import sys
 import os, time
-import asyncio, logging
+import asyncio
+import logging
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import chromadb
@@ -15,6 +16,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from src.vector_search.document_processor import DocumentProcessor
 from src.vector_search.vector_store import VectorStore
+import traceback
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,9 +25,16 @@ from langchain_mistralai import ChatMistralAI
 from src.agent.prompts import Prompts
 from src.agent.travel_agent import TravelChatbotGraph
 
-# create logger
-logger = logging.getLogger("uvicorn.error")
-logger.setLevel(logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logging.getLogger("chromadb").setLevel(logging.WARNING)
+logging.getLogger("chromadb.telemetry.product.posthog").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+logger = logging.getLogger("agent")
 
 # Setup FastAPI
 app = FastAPI()
@@ -84,6 +93,12 @@ async def ask_agent(request: QueryRequest):
         "final_answer": "",
         "chat_history": request.chat_history,
     }
-    # Run the agent graph asynchronously and get the final answer
-    result = await graph.graph.ainvoke(init_state)
-    return {"response": result.get("final_answer", "")}
+    logger.info(f"Received query: {request.query}")
+    logger.info(f"Chat history: {request.chat_history}")
+    try:
+        result = await graph.graph.ainvoke(init_state)
+        logger.info(f"Agent result: {result}")
+        return {"response": result.get("final_answer", "")}
+    except Exception as e:
+        logger.error(f"Agent error: {e}\n{traceback.format_exc()}")
+        return {"response": f"Error: {e}"}
