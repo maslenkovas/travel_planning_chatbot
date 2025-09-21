@@ -7,11 +7,6 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Load environment variables for ChromaDB configuration
-CHROMA_COLLECTION_NAME = os.getenv("CHROMA_COLLECTION_NAME", "twain_book")
-CHROMA_HOST = os.getenv("CHROMA_HOST", "chromadb")
-CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
-
 # Load configuration variables
 from src.config import embedding_model_name
 
