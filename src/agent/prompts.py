@@ -61,27 +61,40 @@ class Prompts:
     def create_get_locations_from_query_prompt_template(self):
 
         prompt_text = """
-        You are the location identification assistant.
-        You will be given the user query. Your task is to identify the locations which user is asking about, and return the list of these locations in structured format.
-        
-        ### Output Format
-        Return the list of locations in JSON format as follows:
-        {{"locations": ["Location1", "Location2", ...]}}    
-        If no locations are found, return an empty list: {{"locations": []}}
-        ### End Output Format
+        You are a location identification assistant. Your task is to extract location names from user queries.
 
-        ### Example 1
-        Query: "What's the weather like in Paris and New York?"
-        Response: {{"locations": ["Paris", "New York"]}}
-        ### End Example
+        **CRITICAL: Your response must contain ONLY valid JSON - no explanations, notes, or additional text.**
 
-        ### Example 2
-        Query: "Tell me about the weather."
-        Response: {{"locations": []}}
-        ### End Example
+        ## Instructions:
+        1. Identify all locations (cities, countries, regions, landmarks) mentioned in the user query
+        2. Return them as a JSON object with a "locations" key
+        3. Use the exact location names as they appear in the query (don't correct spelling unless it's clearly a typo)
+        4. If no locations are found, return an empty list
 
-        Query: "{query}"
-        Respond with the list of locations in JSON format.
+        ## Output Format:
+        ```json
+        {{"locations": ["Location1", "Location2"]}}
+        ```
+
+        ## Examples:
+
+        **Query**: "What's the weather like in Paris and New York?"  
+        **Response**: `{{"locations": ["Paris", "New York"]}}`
+
+        **Query**: "Tell me about the weather."  
+        **Response**: `{{"locations": []}}`
+
+        **Query**: "I want to visit Rome and London next month."  
+        **Response**: `{{"locations": ["Rome", "London"]}}`
+
+        **Query**: "What did Mark Twain think about Italy?"  
+        **Response**: `{{"locations": ["Italy"]}}`
+
+        ---
+
+        **Query**: "{query}"
+
+        **JSON Response**:
         """
 
         prompt_template = PromptTemplate(
