@@ -24,6 +24,7 @@ load_dotenv()
 from langchain_mistralai import ChatMistralAI
 from src.agent.prompts import Prompts
 from src.agent.travel_agent import TravelChatbotGraph
+from src.config import llm_name
 
 logging.basicConfig(
     level=logging.INFO,

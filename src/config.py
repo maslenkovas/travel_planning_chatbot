@@ -1,4 +1,5 @@
 n_rag_results=4
+llm_name='mistral-large'
 embedding_model_name='all-MiniLM-L6-v2'
 chroma_collection_name='twain_book'
 chroma_host='chromadb'
