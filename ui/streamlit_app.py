@@ -367,7 +367,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: #6B7280; font-size: 0.9rem;'>
-        🌟 Powered by AI • Built with Streamlit • Travel smarter, not harder
+        🌟 Powered by Mistral • Built with Streamlit • Travel smarter, not harder
     </div>
     """, 
     unsafe_allow_html=True
